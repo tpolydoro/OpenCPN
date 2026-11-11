@@ -123,6 +123,8 @@ jobs:
           mkdir -p "$QT_ANDROID_ROOT/mkspecs/android-clang"
           touch "$QT_ANDROID_ROOT/mkspecs/features/spec_pre.prf"
           touch "$QT_ANDROID_ROOT/mkspecs/features/spec_post.prf"
+          touch "$QT_ANDROID_ROOT/mkspecs/features/default_pre.prf"
+          touch "$QT_ANDROID_ROOT/mkspecs/features/default_post.prf"
           cat > "$QT_ANDROID_ROOT/mkspecs/android-clang/qmake.conf" <<'EOF'
           MAKEFILE_GENERATOR      = UNIX
           QMAKE_PLATFORM          = android
@@ -144,6 +146,8 @@ jobs:
           mkdir -p apk-build
           cd apk-build
           "$QT_ANDROID_ROOT/bin/qmake" \
+            QMAKE_QMAKE="$QT_ANDROID_ROOT/bin/qmake" \
+            OCPN_ROOT="$GITHUB_WORKSPACE" \
             WX_INCLUDE="$WX_INCLUDE" \
             ../buildandroid/opencpn-apk.pro \
             -o Makefile.android
