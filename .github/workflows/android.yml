@@ -1,0 +1,138 @@
+---
+name: Android build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  ANDROID_API: 33
+  ANDROID_NDK_VERSION: 26.1.10909125
+
+jobs:
+  build-core:
+    name: Android ${{ matrix.abi }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        abi:
+          - armhf
+          - arm64
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          repository: tpolydoro/OpenCPN
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          submodules: recursive
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
+        run: |
+          sdkmanager "platform-tools" \
+            "platforms;android-${ANDROID_API}" \
+            "ndk;${ANDROID_NDK_VERSION}"
+
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes cmake gettext
+
+      - name: Configure CMake
+        env:
+          ABI: ${{ matrix.abi }}
+        run: |
+          export ANDROID_SDK_ROOT="${ANDROID_HOME}"
+          export ANDROID_NDK_ROOT="${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}"
+          export TOOL_BASE="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64"
+
+          if [ "${ABI}" = "arm64" ]; then
+            ln -sf llvm-ar "${TOOL_BASE}/bin/aarch64-linux-android-ar"
+          fi
+
+          cmake -S . -B "build-android-${ABI}" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DOCPN_TARGET_TUPLE:STRING="Android-${ABI};${ANDROID_API};${ABI}" \
+            -DOCPN_BUILD_SAMPLE=ON \
+            -Dtool_base="${TOOL_BASE}"
+
+      - name: Build native library
+        env:
+          ABI: ${{ matrix.abi }}
+        run: |
+          cmake --build "build-android-${ABI}" --target lunasvg --parallel 2
+          cmake --build "build-android-${ABI}" --parallel 2 --verbose
+
+      - name: Upload native library
+        uses: actions/upload-artifact@v4
+        with:
+          name: opencpn-android-${{ matrix.abi }}
+          if-no-files-found: error
+          path: build-android-${{ matrix.abi }}/libgorp.so
+
+      - name: Install Qt Android build support
+        if: matrix.abi == 'armhf'
+        run: |
+          test -x cache/OCPNAndroidCoreBuildSupport/qt5/build_arm32_19_O3/qtbase/bin/qmake
+          test -x cache/OCPNAndroidCoreBuildSupport/qt5/build_arm32_19_O3/qtbase/bin/androiddeployqt
+
+      - name: Build APK
+        if: matrix.abi == 'armhf'
+        run: |
+          export ANDROID_SDK_ROOT="${ANDROID_HOME}"
+          export ANDROID_NDK_ROOT="${ANDROID_SDK_ROOT}/ndk/${ANDROID_NDK_VERSION}"
+          export QT_ANDROID_ROOT="$GITHUB_WORKSPACE/cache/OCPNAndroidCoreBuildSupport/qt5/build_arm32_19_O3/qtbase"
+          export WX_INCLUDE="$(find "$GITHUB_WORKSPACE/cache/OCPNAndroidCoreBuildSupport/wxWidgets/libs/armhf/lib/wx/include" -mindepth 1 -maxdepth 1 -type d -print -quit)"
+          test -n "$WX_INCLUDE"
+
+          mkdir -p apk-build
+          cd apk-build
+          "$QT_ANDROID_ROOT/bin/qmake" \
+            WX_INCLUDE="$WX_INCLUDE" \
+            -makefile ../buildandroid/opencpn-apk.pro \
+            -o Makefile.android \
+            -r \
+            -spec android-g++
+          make -f Makefile.android --jobs=2
+          make -f Makefile.android install INSTALL_ROOT="$PWD/install"
+
+          sed -i \
+            -e 's/android:targetSdkVersion="[0-9]*"/android:targetSdkVersion="33"/' \
+            -e 's/android:versionCode="[0-9]*"/android:versionCode="1"/' \
+            ../buildandroid/android/AndroidManifest.xml
+
+          "$QT_ANDROID_ROOT/bin/androiddeployqt" \
+            --input ./android-libopencpn.so-deployment-settings.json \
+            --output "$PWD/apk" \
+            --android-platform android-33 \
+            --deployment bundled
+
+      - name: Upload APK
+        if: matrix.abi == 'armhf'
+        uses: actions/upload-artifact@v4
+        with:
+          name: opencpn-android-apk
+          if-no-files-found: error
+          path: apk-build/apk/**/*.apk
