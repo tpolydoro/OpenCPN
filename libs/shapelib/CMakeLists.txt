@@ -26,11 +26,13 @@ set(shapelib "https://github.com/OSGeo/shapelib")
 set(src_url "${shapelib}/archive/refs/tags/v1.6.1.tar.gz")
 set(src_hash MD5=ccdcabbc685eb575120fa3eb61003280)
 
-list(APPEND patches
-  0001-cmake-Add-guard-for-multiple-inclusions.patch
-  0002-cmake-Make-BUILD_TESTING-an-option.patch
-  0003-shapefil.h-Use-correct-include-gdal-cpol.h-path.patch
-)
+if (NOT QT_ANDROID)
+  list(APPEND patches
+    0001-cmake-Add-guard-for-multiple-inclusions.patch
+    0002-cmake-Make-BUILD_TESTING-an-option.patch
+    0003-shapefil.h-Use-correct-include-gdal-cpol.h-path.patch
+  )
+endif ()
 
 if (POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
