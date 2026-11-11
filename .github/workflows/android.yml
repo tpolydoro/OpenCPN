@@ -129,6 +129,7 @@ jobs:
           MAKEFILE_GENERATOR      = UNIX
           QMAKE_PLATFORM          = android
           QMAKE_COMPILER          = clang
+          QMAKE_DIR_SEP           = /
           QMAKE_CC                = $$(ANDROID_NDK_ROOT)/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi21-clang
           QMAKE_CXX               = $$(ANDROID_NDK_ROOT)/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi21-clang++
           QMAKE_LINK              = $$QMAKE_CXX
