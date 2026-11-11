@@ -10,10 +10,17 @@ SOURCES += $$OCPN_ROOT/buildandroid/apk_wrapper.cpp
 # The application and its wxWidgets implementation are built by CMake.
 OCPN_BUILD = $$OCPN_ROOT/build-android-armhf
 WX_ROOT = $$OCPN_ROOT/cache/OCPNAndroidCoreBuildSupport/wxWidgets
+QT_ROOT = $$OCPN_ROOT/cache/OCPNAndroidCoreBuildSupport/qt5/build_arm32_19_O3/qtbase
 
 INCLUDEPATH += $$WX_ROOT/include
 INCLUDEPATH += $$WX_INCLUDE
-LIBS += -L$$OCPN_BUILD -lgorp
+INCLUDEPATH += $$QT_ROOT/include
+INCLUDEPATH += $$QT_ROOT/include/QtCore
+INCLUDEPATH += $$QT_ROOT/include/QtGui
+INCLUDEPATH += $$QT_ROOT/include/QtWidgets
+INCLUDEPATH += $$QT_ROOT/include/QtOpenGL
+INCLUDEPATH += $$QT_ROOT/include/QtAndroidExtras
+LIBS += -L$$OCPN_BUILD -L$$QT_ROOT/lib -lgorp
 
 ANDROID_ABIS = armeabi-v7a
 ANDROID_PACKAGE_SOURCE_DIR = $$OCPN_ROOT/buildandroid/android
