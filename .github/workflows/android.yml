@@ -22,7 +22,7 @@ jobs:
     name: Android ${{ matrix.abi }}
     runs-on: ubuntu-24.04
     strategy:
-        fail-fast: false
+      fail-fast: false
       matrix:
         abi:
           - armhf
