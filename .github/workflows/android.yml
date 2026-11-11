@@ -121,6 +121,8 @@ jobs:
           test -n "$WX_INCLUDE"
 
           mkdir -p "$QT_ANDROID_ROOT/mkspecs/android-clang"
+          touch "$QT_ANDROID_ROOT/mkspecs/features/spec_pre.prf"
+          touch "$QT_ANDROID_ROOT/mkspecs/features/spec_post.prf"
           cat > "$QT_ANDROID_ROOT/mkspecs/android-clang/qmake.conf" <<'EOF'
           MAKEFILE_GENERATOR      = UNIX
           QMAKE_PLATFORM          = android
