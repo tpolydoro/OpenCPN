@@ -61,6 +61,17 @@ jobs:
         run: |
           cmake --version
 
+      - name: Prepare RapidJSON
+        run: |
+          mkdir -p .ci/rapidjson
+          curl --fail --location --retry 3 \
+            --output .ci/rapidjson.tar.gz \
+            https://github.com/Tencent/rapidjson/archive/refs/tags/v1.1.0.tar.gz
+          echo "badd12c511e081fec6c89c43a7027bce  .ci/rapidjson.tar.gz" | md5sum --check
+          tar --extract --gzip --strip-components=1 \
+            --file .ci/rapidjson.tar.gz \
+            --directory .ci/rapidjson
+
       - name: Configure CMake
         env:
           ABI: ${{ matrix.abi }}
@@ -78,6 +89,7 @@ jobs:
             -DOCPN_TARGET_TUPLE:STRING="Android-${ABI};${ANDROID_API};${ABI}" \
             -DOCPN_BUILD_SAMPLE=ON \
             -DSKIP_PLUGINS=ON \
+            -DRAPIDJSON:PATH="${GITHUB_WORKSPACE}/.ci/rapidjson/include/rapidjson" \
             -Dtool_base="${TOOL_BASE}"
 
       - name: Build native library
