@@ -22,11 +22,10 @@ jobs:
     name: Android ${{ matrix.abi }}
     runs-on: ubuntu-24.04
     strategy:
-      fail-fast: false
+        fail-fast: false
       matrix:
         abi:
           - armhf
-          - arm64
 
     defaults:
       run:
@@ -120,6 +119,25 @@ jobs:
           export QT_ANDROID_ROOT="$GITHUB_WORKSPACE/cache/OCPNAndroidCoreBuildSupport/qt5/build_arm32_19_O3/qtbase"
           export WX_INCLUDE="$(find "$GITHUB_WORKSPACE/cache/OCPNAndroidCoreBuildSupport/wxWidgets/libs/armhf/lib/wx/include" -mindepth 1 -maxdepth 1 -type d -print -quit)"
           test -n "$WX_INCLUDE"
+
+          mkdir -p "$QT_ANDROID_ROOT/mkspecs/android-clang"
+          cat > "$QT_ANDROID_ROOT/mkspecs/android-clang/qmake.conf" <<'EOF'
+          MAKEFILE_GENERATOR      = UNIX
+          QMAKE_PLATFORM          = android
+          QMAKE_COMPILER          = clang
+          QMAKE_CC                = $$(ANDROID_NDK_ROOT)/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi21-clang
+          QMAKE_CXX               = $$(ANDROID_NDK_ROOT)/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi21-clang++
+          QMAKE_LINK              = $$QMAKE_CXX
+          QMAKE_AR                = $$(ANDROID_NDK_ROOT)/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
+          QMAKE_STRIP             = $$(ANDROID_NDK_ROOT)/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip
+          QMAKE_CFLAGS            = --sysroot=$$(ANDROID_NDK_ROOT)/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+          QMAKE_CXXFLAGS          = $$QMAKE_CFLAGS -std=gnu++17
+          QMAKE_LFLAGS            = $$QMAKE_CFLAGS
+          QMAKE_LIBS              = -llog -landroid -lEGL -lGLESv2 -lz
+          QMAKE_INCDIR_QT         = $$(QT_ANDROID_ROOT)/include
+          QMAKE_LIBDIR_QT         = $$(QT_ANDROID_ROOT)/lib
+          QMAKE_XSPEC             = android-clang
+          EOF
 
           mkdir -p apk-build
           cd apk-build
