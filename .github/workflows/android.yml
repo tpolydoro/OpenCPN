@@ -160,8 +160,10 @@ jobs:
             -e 's/android:versionCode="[0-9]*"/android:versionCode="1"/' \
             ../buildandroid/android/AndroidManifest.xml
 
+          DEPLOYMENT_JSON="$(find . .. -type f -name '*deployment-settings.json' -print -quit)"
+          test -n "$DEPLOYMENT_JSON"
           "$QT_ANDROID_ROOT/bin/androiddeployqt" \
-            --input ./android-libopencpn.so-deployment-settings.json \
+            --input "$DEPLOYMENT_JSON" \
             --output "$PWD/apk" \
             --android-platform android-33 \
             --deployment bundled
