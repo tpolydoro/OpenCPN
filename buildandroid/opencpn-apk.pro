@@ -3,6 +3,7 @@ QT += core gui opengl widgets androidextras
 TARGET = opencpn
 TEMPLATE = app
 CONFIG += release
+DEFINES += __WXQT__ __OCPN__ANDROID__ ANDROID
 
 SOURCES += $$OCPN_ROOT/buildandroid/apk_wrapper.cpp
 
