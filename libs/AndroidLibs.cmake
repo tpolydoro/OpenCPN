@@ -47,6 +47,7 @@ if ("${OCPN_TARGET_TUPLE}" MATCHES "Android-arm64")
   set(Qt_Base ${_master_base}/qt5)
   set(Qt_Build build_arm64_O3/qtbase)
   set(openssl_include ${_master_base}/openssl/arm64/include)
+  set(openssl_root ${_master_base}/openssl/arm64)
 
 else ()
   file(GLOB _wx_setup
@@ -58,7 +59,13 @@ else ()
   set(Qt_Base ${_master_base}/qt5)
   set(Qt_Build build_arm32_19_O3/qtbase)
   set(openssl_include ${_master_base}/openssl/armhf/include)
+  set(openssl_root ${_master_base}/openssl/armhf)
 endif ()
+
+set(OPENSSL_ROOT_DIR ${openssl_root} CACHE PATH "Android OpenSSL root" FORCE)
+set(OPENSSL_INCLUDE_DIR ${openssl_include} CACHE PATH "Android OpenSSL includes" FORCE)
+set(OPENSSL_SSL_LIBRARY ${openssl_root}/lib/libssl.a CACHE FILEPATH "Android OpenSSL SSL library" FORCE)
+set(OPENSSL_CRYPTO_LIBRARY ${openssl_root}/lib/libcrypto.a CACHE FILEPATH "Android OpenSSL crypto library" FORCE)
 
 message(STATUS "Android Build wx include directories: support file base:  ${_wx_setup}")
 
@@ -119,6 +126,8 @@ set(USE_GLES2 ON )
 
 set(ANDROID_WX_INCLUDES ${_wx_setup})
 set(ANDROID_WX_LIBS ${_all_wx_libs})
+set(wxWidgets_INCLUDE_DIRS ${_master_base}/wxWidgets/include ${_wx_setup})
+set(wxWidgets_LIBRARIES ${_all_wx_libs})
 
 #if (NOT CMAKE_BUILD_TYPE STREQUAL Debug)
 #  string(APPEND CMAKE_SHARED_LINKER_FLAGS " -s")

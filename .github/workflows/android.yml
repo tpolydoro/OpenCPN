@@ -114,8 +114,7 @@ jobs:
           "$QT_ANDROID_ROOT/bin/qmake" \
             WX_INCLUDE="$WX_INCLUDE" \
             ../buildandroid/opencpn-apk.pro \
-            -o Makefile.android \
-            -spec android-g++
+            -o Makefile.android
           make -f Makefile.android --jobs=2
           make -f Makefile.android install INSTALL_ROOT="$PWD/install"
 
