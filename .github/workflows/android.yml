@@ -57,10 +57,10 @@ jobs:
             "platforms;android-${ANDROID_API}" \
             "ndk;${ANDROID_NDK_VERSION}"
 
-      - name: Install native build dependencies
+      - name: Check native build tools
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes cmake gettext
+          cmake --version
+          gettext --version
 
       - name: Configure CMake
         env:
