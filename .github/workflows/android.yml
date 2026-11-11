@@ -162,6 +162,11 @@ jobs:
 
           DEPLOYMENT_JSON="$(find . .. -type f -name '*deployment-settings.json' -print -quit)"
           test -n "$DEPLOYMENT_JSON"
+          sed -i \
+            -e "s|/home/dsr/Projects/qt5/build_arm64_O3/qtbase|$QT_ANDROID_ROOT|g" \
+            -e "s|/home/dsr/Projects/qt5/build_arm32_19_O3/qtbase|$QT_ANDROID_ROOT|g" \
+            "$DEPLOYMENT_JSON"
+          test -d "$ANDROID_SDK_ROOT/platforms/android-${ANDROID_API}"
           "$QT_ANDROID_ROOT/bin/androiddeployqt" \
             --input "$DEPLOYMENT_JSON" \
             --output "$PWD/apk" \
